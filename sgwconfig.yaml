@@ -1,0 +1,6 @@
+# gateway引擎端口
+SwingGatewayPort: 8088
+# fabric引擎地址
+# BaasFabricEngine: http://localhost:9088
+# db配置
+SwingGatewayDbconfig: F:\WORKSPACE\Go\src\github.com\susengo\swing\dbconfig.yaml
