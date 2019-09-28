@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/susengo/commontools/xorm"
-	"github.com/susengo/swing/config"
-	"github.com/susengo/swing/controller"
-	"github.com/susengo/swing/service/router"
-	"github.com/susengo/swing/service/server"
+	"github.com/susengo/walletdc/config"
+	"github.com/susengo/walletdc/controller"
+	"github.com/susengo/walletdc/service/handler"
+	"github.com/susengo/walletdc/service/router"
 )
 
 func main() {
@@ -15,8 +15,8 @@ func main() {
 
 	dbengine := xorm.GetEngine(configFile)
 	apiController := controller.NewApiController(
-		server.NewUserService(dbengine),
-		server.NewRoleService(dbengine),
+		handler.NewUserHandler(dbengine),
+		handler.NewRoleHandler(dbengine),
 	)
 
 	router.SetRouterAndRun(apiController, port)

@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"fmt"
@@ -10,18 +10,18 @@ import (
 	jwttool "github.com/susengo/commontools/jwt"
 	"github.com/susengo/commontools/log"
 	"github.com/susengo/commontools/password"
-	"github.com/susengo/swing/model"
+	"github.com/susengo/walletdc/model"
 )
 
-var logger = log.GetLogger("server", log.ERROR)
+var logger = log.GetLogger("handler", log.ERROR)
 
 const TokenKey = "baas user secret"
 
-type UserService struct {
+type UserHandler struct {
 	DbEngine *xorm.Engine
 }
 
-func (l *UserService) Add(user *model.User) (bool, string) {
+func (l *UserHandler) Add(user *model.User) (bool, string) {
 	if user.Password != "" {
 		user.Password = password.Encode(user.Password, 12, "default")
 	}
@@ -35,7 +35,7 @@ func (l *UserService) Add(user *model.User) (bool, string) {
 	return false, "add fail"
 }
 
-func (l *UserService) Update(user *model.User) (bool, string) {
+func (l *UserHandler) Update(user *model.User) (bool, string) {
 	if user.Password != "" {
 		user.Password = password.Encode(user.Password, 12, "default")
 	}
@@ -49,7 +49,7 @@ func (l *UserService) Update(user *model.User) (bool, string) {
 	return false, "update fail"
 }
 
-func (l *UserService) Delete(id int) (bool, string) {
+func (l *UserHandler) Delete(id int) (bool, string) {
 	i, err := l.DbEngine.Where("id = ?", id).Delete(&model.User{})
 	if err != nil {
 		logger.Error(err.Error())
@@ -60,7 +60,7 @@ func (l *UserService) Delete(id int) (bool, string) {
 	return false, "delete fail"
 }
 
-func (l *UserService) GetByUser(user *model.User) (bool, *model.User) {
+func (l *UserHandler) GetByUser(user *model.User) (bool, *model.User) {
 	has, err := l.DbEngine.Get(user)
 	if err != nil {
 		logger.Error(err.Error())
@@ -68,7 +68,7 @@ func (l *UserService) GetByUser(user *model.User) (bool, *model.User) {
 	return has, user
 }
 
-func (l *UserService) GetList(user *model.User, page, size int) (bool, []model.UserDetail, int64) {
+func (l *UserHandler) GetList(user *model.User, page, size int) (bool, []model.UserDetail, int64) {
 
 	pager := gintool.CreatePager(page, size)
 
@@ -127,7 +127,7 @@ func (l *UserService) GetList(user *model.User, page, size int) (bool, []model.U
 	return true, userDatas, total
 }
 
-func (l *UserService) GetToken(user *model.User) *model.JwtToken {
+func (l *UserHandler) GetToken(user *model.User) *model.JwtToken {
 
 	info := make(map[string]interface{})
 	now := time.Now()
@@ -141,7 +141,7 @@ func (l *UserService) GetToken(user *model.User) *model.JwtToken {
 	}
 }
 
-func (l *UserService) CheckToken(token string, user *model.User) (*model.UserInfo, error) {
+func (l *UserHandler) CheckToken(token string, user *model.User) (*model.UserInfo, error) {
 
 	info, ok := jwttool.ParseToken(token, TokenKey)
 	infoMap := info.(jwt.MapClaims)
@@ -173,7 +173,7 @@ func (l *UserService) CheckToken(token string, user *model.User) (*model.UserInf
 	}
 }
 
-func (l *UserService) AddAuth(ur *model.UserRole) (bool, string) {
+func (l *UserHandler) AddAuth(ur *model.UserRole) (bool, string) {
 
 	i, err := l.DbEngine.Insert(ur)
 	if err != nil {
@@ -185,7 +185,7 @@ func (l *UserService) AddAuth(ur *model.UserRole) (bool, string) {
 	return false, "add fail"
 }
 
-func (l *UserService) DelAuth(ur *model.UserRole) (bool, string) {
+func (l *UserHandler) DelAuth(ur *model.UserRole) (bool, string) {
 
 	i, err := l.DbEngine.Delete(ur)
 	if err != nil {
@@ -197,7 +197,7 @@ func (l *UserService) DelAuth(ur *model.UserRole) (bool, string) {
 	return false, "del fail"
 }
 
-func (l *UserService) HasAdminRole(account string) bool {
+func (l *UserHandler) HasAdminRole(account string) bool {
 	user := &model.User{Account: account}
 	_, user = l.GetByUser(user)
 
@@ -213,8 +213,8 @@ func (l *UserService) HasAdminRole(account string) bool {
 	}
 	return false
 }
-func NewUserService(engine *xorm.Engine) *UserService {
-	return &UserService{
+func NewUserHandler(engine *xorm.Engine) *UserHandler {
+	return &UserHandler{
 		DbEngine: engine,
 	}
 }

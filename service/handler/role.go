@@ -1,16 +1,16 @@
-package server
+package handler
 
 import (
 	"github.com/go-xorm/xorm"
 	"github.com/susengo/commontools/gintool"
-	"github.com/susengo/swing/model"
+	"github.com/susengo/walletdc/model"
 )
 
-type RoleService struct {
+type RoleHandler struct {
 	DbEngine *xorm.Engine
 }
 
-func (l *RoleService) Add(role *model.Role) (bool, string) {
+func (l *RoleHandler) Add(role *model.Role) (bool, string) {
 
 	i, err := l.DbEngine.Insert(role)
 	if err != nil {
@@ -22,7 +22,7 @@ func (l *RoleService) Add(role *model.Role) (bool, string) {
 	return false, "add fail"
 }
 
-func (l *RoleService) Update(role *model.Role) (bool, string) {
+func (l *RoleHandler) Update(role *model.Role) (bool, string) {
 	i, err := l.DbEngine.Where("rkey = ?", role.Rkey).Update(role)
 	if err != nil {
 		logger.Error(err.Error())
@@ -33,7 +33,7 @@ func (l *RoleService) Update(role *model.Role) (bool, string) {
 	return false, "update fail"
 }
 
-func (l *RoleService) Delete(key string) (bool, string) {
+func (l *RoleHandler) Delete(key string) (bool, string) {
 	i, err := l.DbEngine.Where("rkey = ?", key).Delete(&model.Role{})
 	if err != nil {
 		logger.Error(err.Error())
@@ -44,7 +44,7 @@ func (l *RoleService) Delete(key string) (bool, string) {
 	return false, "delete fail"
 }
 
-func (l *RoleService) GetByRole(role *model.Role) (bool, *model.Role) {
+func (l *RoleHandler) GetByRole(role *model.Role) (bool, *model.Role) {
 	has, err := l.DbEngine.Get(role)
 	if err != nil {
 		logger.Error(err.Error())
@@ -52,7 +52,7 @@ func (l *RoleService) GetByRole(role *model.Role) (bool, *model.Role) {
 	return has, role
 }
 
-func (l *RoleService) GetList(role *model.Role, page, size int) (bool, []*model.Role, int64) {
+func (l *RoleHandler) GetList(role *model.Role, page, size int) (bool, []*model.Role, int64) {
 
 	pager := gintool.CreatePager(page, size)
 
@@ -77,7 +77,7 @@ func (l *RoleService) GetList(role *model.Role, page, size int) (bool, []*model.
 	return true, roles, total
 }
 
-func (l *RoleService) GetAll() (bool, []*model.Role) {
+func (l *RoleHandler) GetAll() (bool, []*model.Role) {
 
 	roles := make([]*model.Role, 0)
 
@@ -88,8 +88,8 @@ func (l *RoleService) GetAll() (bool, []*model.Role) {
 	return true, roles
 }
 
-func NewRoleService(engine *xorm.Engine) *RoleService {
-	return &RoleService{
+func NewRoleHandler(engine *xorm.Engine) *RoleHandler {
+	return &RoleHandler{
 		DbEngine: engine,
 	}
 }

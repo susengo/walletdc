@@ -9,19 +9,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/susengo/commontools/gintool"
 	"github.com/susengo/commontools/password"
-	"github.com/susengo/swing/model"
-	"github.com/susengo/swing/service/server"
+	"github.com/susengo/walletdc/model"
+	"github.com/susengo/walletdc/service/handler"
 )
 
 type ApiController struct {
-	userService *server.UserService
-	roleService *server.RoleService
+	userHandler *handler.UserHandler
+	roleHandler *handler.RoleHandler
 }
 
-func NewApiController(userService *server.UserService, roleService *server.RoleService) *ApiController {
+func NewApiController(userHandler *handler.UserHandler, roleHandler *handler.RoleHandler) *ApiController {
 	return &ApiController{
-		userService: userService,
-		roleService: roleService,
+		userHandler: userHandler,
+		roleHandler: roleHandler,
 	}
 }
 
@@ -42,7 +42,7 @@ func (a *ApiController) UserAdd(ctx *gin.Context) {
 		gintool.ResultFail(ctx, err)
 		return
 	}
-	isSuccess, msg := a.userService.Add(user)
+	isSuccess, msg := a.userHandler.Add(user)
 	if isSuccess {
 		gintool.ResultMsg(ctx, msg)
 	} else {
@@ -57,7 +57,7 @@ func (a *ApiController) UserAddAuth(ctx *gin.Context) {
 		gintool.ResultFail(ctx, err)
 		return
 	}
-	isSuccess, msg := a.userService.AddAuth(ur)
+	isSuccess, msg := a.userHandler.AddAuth(ur)
 	if isSuccess {
 		gintool.ResultMsg(ctx, msg)
 	} else {
@@ -73,7 +73,7 @@ func (a *ApiController) UserDelAuth(ctx *gin.Context) {
 		gintool.ResultFail(ctx, err)
 		return
 	}
-	isSuccess, msg := a.userService.DelAuth(ur)
+	isSuccess, msg := a.userHandler.DelAuth(ur)
 	if isSuccess {
 		gintool.ResultMsg(ctx, msg)
 	} else {
@@ -89,7 +89,7 @@ func (a *ApiController) UserUpdate(ctx *gin.Context) {
 		gintool.ResultFail(ctx, err)
 		return
 	}
-	isSuccess, msg := a.userService.Update(user)
+	isSuccess, msg := a.userHandler.Update(user)
 	if isSuccess {
 		gintool.ResultMsg(ctx, msg)
 	} else {
@@ -105,7 +105,7 @@ func (a *ApiController) UserDelete(ctx *gin.Context) {
 		gintool.ResultFail(ctx, err)
 		return
 	}
-	isSuccess, msg := a.userService.Delete(user.Id)
+	isSuccess, msg := a.userHandler.Delete(user.Id)
 	if isSuccess {
 		gintool.ResultMsg(ctx, msg)
 	} else {
@@ -123,7 +123,7 @@ func (a *ApiController) UserLogin(ctx *gin.Context) {
 	user := &model.User{
 		Account: login.UserName,
 	}
-	has, u := a.userService.GetByUser(user)
+	has, u := a.userHandler.GetByUser(user)
 	if !has {
 		gintool.ResultFail(ctx, "username error")
 		return
@@ -136,7 +136,7 @@ func (a *ApiController) UserLogin(ctx *gin.Context) {
 
 	type UserInfo map[string]interface{}
 
-	token := a.userService.GetToken(u)
+	token := a.userHandler.GetToken(u)
 	//保存session
 	gintool.SetSession(ctx, token.Token, u.Id)
 	gintool.ResultOk(ctx, token)
@@ -158,7 +158,7 @@ func (a *ApiController) UserInfo(ctx *gin.Context) {
 		gintool.ResultFail(ctx, "token不存在")
 		return
 	}
-	user, err := a.userService.CheckToken(token, &model.User{Id: session.(int)})
+	user, err := a.userHandler.CheckToken(token, &model.User{Id: session.(int)})
 
 	if err != nil {
 		if err.Error() == "token已过期" || err.Error() == "token无效" {
@@ -191,7 +191,7 @@ func (a *ApiController) UserAuthorize(ctx *gin.Context) {
 		gintool.ResultFail(ctx, "token不存在")
 		return
 	}
-	_, err = a.userService.CheckToken(token, &model.User{Id: session.(int)})
+	_, err = a.userHandler.CheckToken(token, &model.User{Id: session.(int)})
 
 	if err != nil {
 		if err.Error() == "token已过期" || err.Error() == "token无效" {
@@ -223,7 +223,7 @@ func (a *ApiController) UserList(ctx *gin.Context) {
 	}
 	name := ctx.Query("name")
 
-	b, list, total := a.userService.GetList(&model.User{Name: name}, page, limit)
+	b, list, total := a.userHandler.GetList(&model.User{Name: name}, page, limit)
 
 	if b {
 		gintool.ResultList(ctx, list, total)
@@ -247,7 +247,7 @@ func (a *ApiController) RoleList(ctx *gin.Context) {
 	}
 	name := ctx.Query("name")
 
-	b, list, total := a.roleService.GetList(&model.Role{Name: name}, page, limit)
+	b, list, total := a.roleHandler.GetList(&model.Role{Name: name}, page, limit)
 
 	if b {
 		gintool.ResultList(ctx, list, total)
@@ -259,7 +259,7 @@ func (a *ApiController) RoleList(ctx *gin.Context) {
 
 func (a *ApiController) RoleAllList(ctx *gin.Context) {
 
-	b, list := a.roleService.GetAll()
+	b, list := a.roleHandler.GetAll()
 	if b {
 		gintool.ResultOk(ctx, list)
 
@@ -276,7 +276,7 @@ func (a *ApiController) RoleAdd(ctx *gin.Context) {
 		gintool.ResultFail(ctx, err)
 		return
 	}
-	isSuccess, msg := a.roleService.Add(role)
+	isSuccess, msg := a.roleHandler.Add(role)
 	if isSuccess {
 		gintool.ResultMsg(ctx, msg)
 	} else {
@@ -292,7 +292,7 @@ func (a *ApiController) RoleUpdate(ctx *gin.Context) {
 		gintool.ResultFail(ctx, err)
 		return
 	}
-	isSuccess, msg := a.roleService.Update(role)
+	isSuccess, msg := a.roleHandler.Update(role)
 	if isSuccess {
 		gintool.ResultMsg(ctx, msg)
 	} else {
@@ -308,7 +308,7 @@ func (a *ApiController) RoleDelete(ctx *gin.Context) {
 		gintool.ResultFail(ctx, err)
 		return
 	}
-	isSuccess, msg := a.roleService.Delete(role.Rkey)
+	isSuccess, msg := a.roleHandler.Delete(role.Rkey)
 	if isSuccess {
 		gintool.ResultMsg(ctx, msg)
 	} else {
